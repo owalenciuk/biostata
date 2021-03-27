@@ -2,6 +2,10 @@ library(survival)
 library(KMsurv)
 library(survMisc)
 library(foreign)
+library(rms)
+library(dplyr)
+
+setwd("C:\\Users\\AS\\Desktop\\SMAD sem 2\\biostata")
 
 df <- read.dta("gbcs_short.dta")
 
@@ -48,16 +52,16 @@ abline(v=150)
 
 
 # przeklejone ze strony https://www.labtestsonline.pl/test/receptory-estrogenowe-i-progesteronowe
-# Receptory estrogenowe (ER) i receptory progesteronowe (PR) to specyficzne bia³ka 
-# obecne w komórkach okreœlonych tkanek organizmu. Funkcj¹ receptorów jest wi¹zanie 
-# estrogenów i progesteronu, ¿eñskich hormonów p³ciowych obecnych we krwi, które 
-# stymuluj¹ wzrost komórek i ich podzia³y.
+# Receptory estrogenowe (ER) i receptory progesteronowe (PR) to specyficzne biaÅ‚ka 
+# obecne w komÃ³rkach okreÅ›lonych tkanek organizmu. FunkcjÄ… receptorÃ³w jest wiÄ…zanie 
+# estrogenÃ³w i progesteronu, Å¼eÅ„skich hormonÃ³w pÅ‚ciowych obecnych we krwi, ktÃ³re 
+# stymulujÄ… wzrost komÃ³rek i ich podziaÅ‚y.
 # 
-# W ró¿nych rodzajach nowotworów sutka stwierdza siê w komórkach obecnoœæ receptorów 
-# estrogenowych i/lub progesteronowych, czêsto o wysokim stê¿eniu (liczbie). 
-# S¹ to tzw. nowotwory hormono-zale¿ne, których rozrost jest uwarunkowany stê¿eniem 
-# estrogenów i/lub progesteronu we krwi. Tkankê sutka bada siê na obecnoœæ (ER+, PR+) 
-# lub nieobecnoœæ tych receptorów (ER-, PR-).
+# W rÃ³Å¼nych rodzajach nowotworÃ³w sutka stwierdza siÄ™ w komÃ³rkach obecnoÅ›Ä‡ receptorÃ³w 
+# estrogenowych i/lub progesteronowych, czÄ™sto o wysokim stÄ™Å¼eniu (liczbie). 
+# SÄ… to tzw. nowotwory hormono-zaleÅ¼ne, ktÃ³rych rozrost jest uwarunkowany stÄ™Å¼eniem 
+# estrogenÃ³w i/lub progesteronu we krwi. TkankÄ™ sutka bada siÄ™ na obecnoÅ›Ä‡ (ER+, PR+) 
+# lub nieobecnoÅ›Ä‡ tych receptorÃ³w (ER-, PR-).
 
 # wskaznik progesteronu
 #0 - ujemny, 1 - dodatni
@@ -83,9 +87,9 @@ abline(v=150)
 # 1 - niski, 2 - sredni, 3-wysoki
 
 # z wikipedii https://pl.wikipedia.org/wiki/Z%C5%82o%C5%9Bliwo%C5%9B%C4%87_histologiczna
-# G1 – rak wysokozró¿nicowany (niski stopieñ z³oœliwoœci)
-# G2 – rak œredniozró¿nicowany (poœredni stopieñ z³oœliwoœci)
-# G3 – rak niskozró¿nicowany (wysoki stopieñ z³oœliwoœci)
+# G1 â€“ rak wysokozrÃ³Å¼nicowany (niski stopieÅ„ zÅ‚oÅ›liwoÅ›ci)
+# G2 â€“ rak Å›redniozrÃ³Å¼nicowany (poÅ›redni stopieÅ„ zÅ‚oÅ›liwoÅ›ci)
+# G3 â€“ rak niskozrÃ³Å¼nicowany (wysoki stopieÅ„ zÅ‚oÅ›liwoÅ›ci)
 
 #UWAGA: grade chyba oznacza jednak stopien zlosliwosci, a nie zroznicowania (?)
 
@@ -246,3 +250,118 @@ pval <- 2*(1-pnorm(Z))
 # 1) size - wielkosc guza 
 # 2) nodes - liczbe wezlow chlonnych z przerzutami nowotworu 
 
+min(df$nodes)
+max(df$nodes)
+
+
+quantile(df$nodes, 0.25) #1
+quantile(df$nodes, 0.5) #3
+quantile(df$nodes,0.75) #7
+boxplot(df$nodes)
+
+# grupujemy po liczbie wÄ™zÅ‚Ã³w chÅ‚onnych 
+
+df$nodes_gr2<- cut(df$nodes, 
+                     breaks = c(0, 3, 51),
+                     labels = c(1, 2),
+                     include.lowest = TRUE)
+df$nodes_gr2 <- as.numeric(df$nodes_gr2)
+
+# sprawdzamy, czy podzial jest ok
+df %>%   group_by(nodes_gr2) %>%   summarize(liczba_przypadkow = sum(censrec, na.rm = TRUE))
+#  nodes_gr2 liczba_przypadkow
+#1         1               119
+#2         2               180
+
+
+
+krzywa_przezycia_nodes1 <- survfit(Surv(rectime, censrec) ~ 1, 
+                                  data=df,
+                                  subset = nodes_gr2 == 1,
+                                  se.fit = FALSE)
+
+krzywa_przezycia_nodes2 <- survfit(Surv(rectime, censrec) ~ 1, 
+                                  data=df,
+                                  subset = nodes_gr2 == 2,
+                                  se.fit = FALSE)
+
+plot(krzywa_przezycia_nodes1,col="red", xlab = "czas (dni)", ylab = "prawdopodobieÅ„stwo przeÅ¼ycia", 
+     main = "Krzywa przeÅ¼ycia")
+lines(krzywa_przezycia_nodes2,col="green")
+legend("topright", legend = c("nodes < 3", "nodes > 3"),  
+       fill = c("red", "green"))
+
+# testujemy
+test_nodes <- survdiff(Surv(rectime, censrec) ~ nodes_gr2, data = df, rho = 0)
+print(test_nodes) # p= <2e-16  < 0.05 => odrzucamy H0 => krzywe roznia sie istotnie
+
+# test trendu 
+trend_nodes <- ten(Surv(rectime, censrec) ~ nodes_gr2, data = df)
+print(trend_nodes)
+comp(trend_nodes) # gdzie jest p-value???
+
+
+#size
+
+min(df$size) #3
+max(df$size) #120
+
+quantile(df$size, 0.25) #20
+quantile(df$size, 0.5) #25
+quantile(df$size,0.75) #35
+boxplot(df$size)
+abline(h=35)
+abline(h=25)
+abline(h=20)
+
+df$size_gr2<- cut(df$size, 
+                   breaks = c(0, 20, 25, 35, 120),
+                   labels = c(1, 2, 3, 4),
+                   include.lowest = TRUE)
+
+df$size_gr2<- as.numeric(df$size_gr2)
+df %>%   group_by(size_gr2) %>%   summarize(liczba_przypadkow = sum(censrec, na.rm = TRUE))
+
+#  size_gr2 liczba_przypadkow
+#1        1                65
+#2        2                76
+#3        3                83
+#4        4                75
+
+krzywa_przezycia_size1 <- survfit(Surv(rectime, censrec) ~ 1, 
+                                   data=df,
+                                   subset = size_gr2 == 1,
+                                   se.fit = FALSE)
+
+krzywa_przezycia_size2 <- survfit(Surv(rectime, censrec) ~ 1, 
+                                   data=df,
+                                   subset = size_gr2 == 2,
+                                   se.fit = FALSE)
+krzywa_przezycia_size3 <- survfit(Surv(rectime, censrec) ~ 1, 
+                                  data=df,
+                                  subset = size_gr2 == 3,
+                                  se.fit = FALSE)
+krzywa_przezycia_size4 <- survfit(Surv(rectime, censrec) ~ 1, 
+                                  data=df,
+                                  subset = size_gr2 == 4,
+                                  se.fit = FALSE)
+
+
+
+plot(krzywa_przezycia_size1,col="red", xlab = "czas (dni)", ylab = "prawdopodobieÅ„stwo przeÅ¼ycia", 
+     main = "Krzywa przeÅ¼ycia")
+lines(krzywa_przezycia_size2,col="green")
+lines(krzywa_przezycia_size3,col="blue")
+lines(krzywa_przezycia_size4,col="yellow")
+legend("topright", legend = c("size < 20", "size 20-25", "size 25-35", "size>35"),  
+       fill = c("red", "green", "blue", "yellow"))
+
+
+# testujemy
+test_size <- survdiff(Surv(rectime, censrec) ~ size_gr2, data = df, rho = 0)
+print(test_size) # p= p= 0.009   < 0.05 => odrzucamy H0 => krzywe roznia sie istotnie
+
+# test trendu 
+trend_size <- ten(Surv(rectime, censrec) ~ size_gr2, data = df)
+print(trend_size)
+comp(trend_size) # gdzie jest p-value???
