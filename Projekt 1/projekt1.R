@@ -5,8 +5,6 @@ library(foreign)
 library(rms)
 library(dplyr)
 
-setwd("C:\\Users\\AS\\Desktop\\SMAD sem 2\\biostata")
-
 df <- read.dta("gbcs_short.dta")
 
 head(df)
@@ -33,88 +31,72 @@ mediana <- min(km$time[1-km$surv>=0.5])
 #menopauza
 #1 - nie, 2 - tak
 km_meno <-survfit(Surv(rectime, censrec) ~ meno, data = df)
-plot(km_meno, col=1:2)
+plot(km_meno, col=1:2, main="Menopauza", 
+     xlab ="czas [dni]", ylab="Prawdopodobieństwo przeżycia")
+legend("topright", c("nie","tak"), col=c(1,2), lwd=1)
 abline(v=150)
-#czarna - 1 - nie
-#czerwona - 2 - tak
 #Przecinaja sie - trzeba formalny test zeby to stwierdzic
 
 
 #uzycie terapii hormonalnej
 #1 - nie, 2 - tak
 km_horm <-survfit(Surv(rectime, censrec) ~ horm, data = df)
-plot(km_horm, col=1:2)
+plot(km_horm, col=1:2, main="Terapia hormonalna", 
+     xlab ="czas [dni]", ylab="Prawdopodobieństwo przeżycia")
+legend("topright", c("nie","tak"), col=c(1,2), lwd=1)
 abline(v=150)
-#czarna - 1 - nie
-#czerowna - 2 - tak
+
 #WNIOSEK: mozna tak wstepnie powiedziec, ze uzycie terapii hormonalnej ma istotny wplyw na przezycie
 #przy - 2 tak - uzywaniu terapii, pstwo przezycia jest wieksze 
 
 
-# przeklejone ze strony https://www.labtestsonline.pl/test/receptory-estrogenowe-i-progesteronowe
-# Receptory estrogenowe (ER) i receptory progesteronowe (PR) to specyficzne białka 
-# obecne w komórkach określonych tkanek organizmu. Funkcją receptorów jest wiązanie 
-# estrogenów i progesteronu, żeńskich hormonów płciowych obecnych we krwi, które 
-# stymulują wzrost komórek i ich podziały.
-# 
-# W różnych rodzajach nowotworów sutka stwierdza się w komórkach obecność receptorów 
-# estrogenowych i/lub progesteronowych, często o wysokim stężeniu (liczbie). 
-# Są to tzw. nowotwory hormono-zależne, których rozrost jest uwarunkowany stężeniem 
-# estrogenów i/lub progesteronu we krwi. Tkankę sutka bada się na obecność (ER+, PR+) 
-# lub nieobecność tych receptorów (ER-, PR-).
-
 # wskaznik progesteronu
 #0 - ujemny, 1 - dodatni
 km_prog <-survfit(Surv(rectime, censrec) ~ prog, data = df)
-plot(km_prog, col=1:2)
+plot(km_prog, col=1:2, main="Wskaźnik receptorów progesteronu", 
+     xlab ="czas [dni]", ylab="Prawdopodobieństwo przeżycia")
+legend("topright", c("ujemny","dodatni"), col=c(1,2), lwd=1)
 abline(v=150)
-#czarna - 0 - ujemny
-#czerwona - 1 - dodatni
+
 #WNIOSEK: mozna tak wstepnie powiedziec, ze progesteron ma istotny wplyw na przezycie
 #przy - 1 dodatnim wskazniku progesteronu - pstwo przezycia jest wieksze
 
 #wskaznik estrogenu
 #0 - ujemny, 1 - dodatni
 km_estr <-survfit(Surv(rectime, censrec) ~ estr, data = df)
-plot(km_estr, col=1:2)
+plot(km_estr, col=1:2, main="Wskaźnik receptorów estrogenu", 
+     xlab ="czas [dni]", ylab="Prawdopodobieństwo przeżycia")
+legend("topright", c("ujemny","dodatni"), col=c(1,2), lwd=1)
 abline(v=150)
-#czarna - 0 - ujemny
-#czerwona - 1 - dodatni
+
 #WNIOSEK: tak samo, widzimy istotne roznice pomiedzy tymi oboma grupami
 # dodatni wskaznik receptorow estrogenu - wieksze pstwo przezycia
 
 #stopien zroznicowania komorek nowotworu 
 # 1 - niski, 2 - sredni, 3-wysoki
 
-# z wikipedii https://pl.wikipedia.org/wiki/Z%C5%82o%C5%9Bliwo%C5%9B%C4%87_histologiczna
-# G1 – rak wysokozróżnicowany (niski stopień złośliwości)
-# G2 – rak średniozróżnicowany (pośredni stopień złośliwości)
-# G3 – rak niskozróżnicowany (wysoki stopień złośliwości)
-
-#UWAGA: grade chyba oznacza jednak stopien zlosliwosci, a nie zroznicowania (?)
-
 km_grade <-survfit(Surv(rectime, censrec) ~ grade, data = df)
-plot(km_grade, col=1:3)
+plot(km_grade, col=1:3, main="Stopień zrożnicowania komorek nowotworu", 
+     xlab ="czas [dni]", ylab="Prawdopodobieństwo przeżycia")
+
+legend("topright", c("niski","średni", "wysoki"), col=c(1:3), lwd=1)
 abline(v=100)
-#WNIOSEK: bez zaskoczenia, wystepuja roznice, oczywiscie im wiekszy stopien zroznicowania komorek nowotworowych
-#tym mniejsze prawdopodobienstwo przezycia
+# WNIOSEK: bez zaskoczenia, wystepuja roznice, oczywiscie im wiekszy stopien zroznicowania komorek nowotworowych
+# tym mniejsze prawdopodobienstwo przezycia
 
 
 
-#UWAGA: wszelkie przecinania sie tych wykresow trzeba rozgraniczyc na np. wczesna faze i pozna, bo moze sie to w czasie zmieniac
-#Tu napisalam tylko takie rzeczy bez przeciec.
-#Mozna dodac ze poczatki nie roznia sie za wiele - pierwsze 150dni - te zachowanie w grupach jest takie samo, moze poza ostatnim wykresem, tam bardziej 
-#pierwsze 100dni.
-
+#UWAGA:Mozna dodac ze poczatki nie roznia sie za wiele - pierwsze 150dni - te zachowanie w grupach 
+#jest takie samo, moze poza ostatnim wykresem, tam bardziej pierwsze 100dni.
 
 #UWAGA: moze byc tak, ze funkcje sie nie krzyzuja, ale sa na tyle blisko siebie, ze moze wystepowac tak naprawde brak istotnych roznic
 #dlatego nalezy zastosowac testy statystyczne zeby formalnie sprawdzic czy jakies roznice tam wystepuja czy nie 
 
+
 ### 2 ###
-# testy - ocena hipotez dotyczacych roznic w funkcjach przezycia
+# TESTY - ocena hipotez dotyczacych roznic w funkcjach przezycia
 
-#test porownania dwoch grup
-
+# test porownania dwoch grup
 
 mod <- comp(ten(Surv(rectime, censrec) ~ meno, data=df))
 comp(ten(Surv(rectime, censrec) ~ meno, data=df))
@@ -131,7 +113,6 @@ comp(ten(Surv(rectime, censrec) ~ meno, data=df))
 
 
 survdiff(Surv(rectime, censrec) ~ meno, data=df)
-
 
 
 mod2 <- Surv(df$rectime, df$censrec) ~ df$horm
@@ -158,30 +139,23 @@ survdiff(mod5) #zgodnie z oczekiwaniami p-value malutkie
 
 ### TEST W GRUPACH
 
-fit.km2<-survfit(Surv(rectime, censrec) ~ horm+strata(prog), data=df)
-
-plot(fit.km2,col=1:4)
-
-
 # progesteron
 df.nprog<-df[df$prog==0,]
 df.pprog<-df[df$prog==1,]
 
-fit.km2.nprog<-survfit(Surv(rectime, censrec) ~ horm, data=df.nprog)
-fit.km2.pprog<-survfit(Surv(rectime, censrec) ~ horm, data=df.pprog)
+km.nprog<-survfit(Surv(rectime, censrec) ~ horm, data=df.nprog)
+km.pprog<-survfit(Surv(rectime, censrec) ~ horm, data=df.pprog)
 
 X11()
 par(mfrow=c(1,2))
 
-plot(fit.km2.nprog,col=c(1,2),lwd=2, main="negative prog")
-legend("topright",c("non horm","horm"),col=c(1,2),lty=1,lwd=2)
+plot(km.nprog,col=c(1,2),lwd=2, main="Ujemny wskaźnik receptorów progesteronu", 
+     xlab ="czas [dni]", ylab="Prawdopodobieństwo przeżycia")
+legend("topright",c("brak terapii hormonalnej","terapia hormonalna"),col=c(1,2),lwd=1)
 
-plot(fit.km2.pprog,col=c(1,2),lwd=2, main="positive prog")
-legend("topright",c("non horm","horm"),col=c(1,2),lty=1,lwd=2)
-
-# test warstwowy
-survdiff(Surv(rectime, censrec) ~ horm+strata(prog), data=df)
-# p= 0.005
+plot(km.pprog,col=c(1,2),lwd=2, main="Dodatni wskaźnik receptorów progesteronu",
+     xlab ="czas [dni]", ylab="Prawdopodobieństwo przeżycia")
+legend("topright",c("brak terapii hormonalnej","terapia hormonalna"),col=c(1,2),lwd=1)
 
 
 # oddzielne testy w obu grupach
@@ -189,58 +163,62 @@ survdiff(Surv(rectime, censrec) ~ horm, data=df.nprog)
 # p= 0.6 
 survdiff(Surv(rectime, censrec) ~ horm, data=df.pprog)
 # p= 5e-04 
-# w grupie kobiet z dodatnim wskaznikiem receptorow progesteronu, terapia hormonalna ma
-# pozytywny wplyw na prawdopodobienstwo przezycia, natomiast w grupie z ujemnym 
-# wskaznikiem receptorow progesteronu nie ma istotnych roznic w przypadku leczenia
+# WNIOSEK: W grupie kobiet z dodatnim wskaźnikiem receptorów progesteronu, terapia hormonalna ma
+# pozytywny wpływ na prawdopodobieństwo przeżycia, natomiast w grupie z ujemnym 
+# wskaźnikiem receptorów progesteronu nie ma istotnych rożnic w przypadku leczenia
 # hormonalnego
 
 # estrogen
 df.nestr<-df[df$estr==0,]
 df.pestr<-df[df$estr==1,]
 
-fit.km2.nestr<-survfit(Surv(rectime, censrec) ~ horm, data=df.nestr)
-fit.km2.pestr<-survfit(Surv(rectime, censrec) ~ horm, data=df.pestr)
+km.nestr<-survfit(Surv(rectime, censrec) ~ horm, data=df.nestr)
+km.pestr<-survfit(Surv(rectime, censrec) ~ horm, data=df.pestr)
 
 X11()
 par(mfrow=c(1,2))
 
-plot(fit.km2.nestr,col=c(1,2),lwd=2, main="negative estr")
-legend("topright",c("non horm","horm"),col=c(1,2),lty=1,lwd=2)
+plot(km.nestr,col=c(1,2),lwd=2, main="Ujemny wskaźnik receptorów estrogenu",
+     xlab ="czas [dni]", ylab="Prawdopodobieństwo przeżycia")
+legend("topright",c("brak terapii hormonalnej","terapia hormonalna"),col=c(1,2),lwd=2)
 
-plot(fit.km2.pestr,col=c(1,2),lwd=2, main="positive estr")
-legend("topright",c("non horm","horm"),col=c(1,2),lty=1,lwd=2)
+plot(km.pestr,col=c(1,2),lwd=2, main="Dodatni wskaźnik receptorów estrogenu",
+     xlab ="czas [dni]", ylab="Prawdopodobieństwo przeżycia")
+legend("topright",c("brak terapii hormonalnej","terapia hormonalna"),col=c(1,2),lwd=2)
 
-#oddzielne testy w obu grupach
+# oddzielne testy w obu grupach
 survdiff(Surv(rectime, censrec) ~ horm, data=df.nestr)
 # p= 0.2 
 survdiff(Surv(rectime, censrec) ~ horm, data=df.pestr)
 # p= 0.02 
+# WNIOSEK: W grupie kobiet z dodatnim wskaźnikiem receptorów estrogenu, terapia 
+# hormonalna ma pozytywny wpływ na prawdopodobieństwo przeżycia, natomiast w grupie 
+# z ujemnym wskaźnikiem nie ma istotnych rożnic w przypadku leczenia hormonalnego
 
 
 ### TESTY DLA TRENDU ###
 
-km_grade <-survfit(Surv(rectime, censrec) ~ grade, data = df)
-plot(km_grade, col=1:3)
-# funkcje przezycia ladnie rozdzielone, nie krzyzuja sie
-# funkcje przezycia dla 1 najwieksza, dla 3 najmniejsza
-# jezeli funkcje przezycia ukladaja sie od najwiekszej do najmniejszej
-# to funkjce hazardu ustawiaja sie odwrotnie i wlasnie to mierzy ten test
-# porzadek jest tutaj bardzo istotny!!!
+km.grade <- survfit(Surv(rectime, censrec) ~ grade, data = df)
+plot(km.grade, col=1:3, main = "Stopień zróżnicowania komórek nowotworu",
+     xlab ="czas [dni]", ylab="Prawdopodobieństwo przeżycia")
+legend("topright",c("niski","średni", "wysoki"),col=c(1,2,3),lty=1,lwd=2, bty="n")
 
+# Funkcje przeżycia układaja sie od najwiekszej, do najmniejszej - zachowyany
+# dobry porzadek do testu trendu
 
-grade_test <- survdiff(Surv(rectime, censrec) ~ grade, data = df)
+grade.test <- survdiff(Surv(rectime, censrec) ~ grade, data = df)
 
-l <- sum((grade_test$obs-grade_test$exp)*(1:3))
-m <- sqrt(sum(outer(1:3,1:3,"*")*grade_test$var))
+# Statystyka testu dla trendu oparta o logrank
+l <- sum((grade.test$obs-grade.test$exp)*(1:3))
+m <- sqrt(sum(outer(1:3,1:3,"*")*grade.test$var))
 
-Z<-l/m # test statistic for testing trend, based on log-rank 
+Z <- l/m  
 # Z = 4.47
 
-pval <- (1-pnorm(Z))
-# 7.904387e-06
-# odrzucamy H0 na rzecz H1 o tym, ze widoczny trend (im wyzszy stopien zlosliwosci,
-# tym mniejsza funkcja przezycia) jest statystycznie  istotny
-
+pval <- 1-pnorm(Z)
+# 3.952194e-06
+# Odrzucamy H0 na rzecz H1 o tym, że widoczny trend (im wyższy stopień zróżnicowania,
+# tym mniejsza funkcja przeżycia) jest statystycznie  istotny
 
 
 
@@ -262,9 +240,9 @@ boxplot(df$nodes)
 # grupujemy po liczbie węzłów chłonnych 
 
 df$nodes_gr2<- cut(df$nodes, 
-                     breaks = c(0, 3, 51),
-                     labels = c(1, 2),
-                     include.lowest = TRUE)
+                   breaks = c(0, 3, 51),
+                   labels = c(1, 2),
+                   include.lowest = TRUE)
 df$nodes_gr2 <- as.numeric(df$nodes_gr2)
 
 # sprawdzamy, czy podzial jest ok
@@ -276,14 +254,14 @@ df %>%   group_by(nodes_gr2) %>%   summarize(liczba_przypadkow = sum(censrec, na
 
 
 krzywa_przezycia_nodes1 <- survfit(Surv(rectime, censrec) ~ 1, 
-                                  data=df,
-                                  subset = nodes_gr2 == 1,
-                                  se.fit = FALSE)
+                                   data=df,
+                                   subset = nodes_gr2 == 1,
+                                   se.fit = FALSE)
 
 krzywa_przezycia_nodes2 <- survfit(Surv(rectime, censrec) ~ 1, 
-                                  data=df,
-                                  subset = nodes_gr2 == 2,
-                                  se.fit = FALSE)
+                                   data=df,
+                                   subset = nodes_gr2 == 2,
+                                   se.fit = FALSE)
 X11()
 par(mfrow=c(1,2))
 plot(krzywa_przezycia_nodes1,col="red", xlab = "czas (dni)", ylab = "prawdopodobieństwo przeżycia", 
@@ -293,7 +271,7 @@ legend("topright", legend = c("nodes < 3", "nodes > 3"),
        fill = c("red", "green"))
 
 # testujemy
-test_nodes <- survdiff(Surv(rectime, censrec) ~ nodes_gr2, data = df, rho = 0)
+test_nodes <- survdiff(Surv(rectime, censrec) ~ nodes_gr2, data = df)
 print(test_nodes) # p= <2e-16  < 0.05 => odrzucamy H0 => krzywe roznia sie istotnie
 
 
@@ -313,9 +291,9 @@ abline(h=25)
 abline(h=20)
 
 df$size_gr2<- cut(df$size, 
-                   breaks = c(0, 20, 25, 35, 120),
-                   labels = c(1, 2, 3, 4),
-                   include.lowest = TRUE)
+                  breaks = c(0, 20, 25, 35, 120),
+                  labels = c(1, 2, 3, 4),
+                  include.lowest = TRUE)
 
 df$size_gr2<- as.numeric(df$size_gr2)
 df %>%   group_by(size_gr2) %>%   summarize(liczba_przypadkow = sum(censrec, na.rm = TRUE))
@@ -327,14 +305,14 @@ df %>%   group_by(size_gr2) %>%   summarize(liczba_przypadkow = sum(censrec, na.
 #4        4                75
 
 krzywa_przezycia_size1 <- survfit(Surv(rectime, censrec) ~ 1, 
-                                   data=df,
-                                   subset = size_gr2 == 1,
-                                   se.fit = FALSE)
+                                  data=df,
+                                  subset = size_gr2 == 1,
+                                  se.fit = FALSE)
 
 krzywa_przezycia_size2 <- survfit(Surv(rectime, censrec) ~ 1, 
-                                   data=df,
-                                   subset = size_gr2 == 2,
-                                   se.fit = FALSE)
+                                  data=df,
+                                  subset = size_gr2 == 2,
+                                  se.fit = FALSE)
 krzywa_przezycia_size3 <- survfit(Surv(rectime, censrec) ~ 1, 
                                   data=df,
                                   subset = size_gr2 == 3,
@@ -360,22 +338,15 @@ test_size <- survdiff(Surv(rectime, censrec) ~ size_gr2, data = df)
 print(test_size) # p= p= 0.009   < 0.05 => odrzucamy H0 => krzywe roznia sie istotnie
 
 # test trendu 
-trend_size <- ten(Surv(rectime, censrec) ~ size_gr2, data = df)
-print(trend_size) 
-comp(trend_size)
-attr(trend_size, "tft")
-
-
 
 size_test <- survdiff(Surv(rectime, censrec) ~ size_gr2, data = df)
 
 l <- sum((size_test$obs-size_test$exp)*(1:4))
 m <- sqrt(sum(outer(1:4,1:4,"*")*size_test$var))
 
-Z<-l/m # test statistic for testing trend, based on log-rank 
+Z<-l/m
 # Z = 3.370494
 
-pval <- (1-pnorm(Z))
+pval <- 1-pnorm(Z)
 # 0.0003751677
 # odrzucamy H0 na rzecz H1 o tym, ze widoczny trend (im wiekszy guz) jest statystycznie  istotny
-
