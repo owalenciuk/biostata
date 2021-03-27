@@ -236,7 +236,7 @@ m <- sqrt(sum(outer(1:3,1:3,"*")*grade_test$var))
 Z<-l/m # test statistic for testing trend, based on log-rank 
 # Z = 4.47
 
-pval <- 2*(1-pnorm(Z))
+pval <- (1-pnorm(Z))
 # 7.904387e-06
 # odrzucamy H0 na rzecz H1 o tym, ze widoczny trend (im wyzszy stopien zlosliwosci,
 # tym mniejsza funkcja przezycia) jest statystycznie  istotny
@@ -284,9 +284,10 @@ krzywa_przezycia_nodes2 <- survfit(Surv(rectime, censrec) ~ 1,
                                   data=df,
                                   subset = nodes_gr2 == 2,
                                   se.fit = FALSE)
-
+X11()
+par(mfrow=c(1,2))
 plot(krzywa_przezycia_nodes1,col="red", xlab = "czas (dni)", ylab = "prawdopodobieństwo przeżycia", 
-     main = "Krzywa przeżycia")
+     main = "Liczba węzłów chłonnych z przerzutami nowotworu ")
 lines(krzywa_przezycia_nodes2,col="green")
 legend("topright", legend = c("nodes < 3", "nodes > 3"),  
        fill = c("red", "green"))
@@ -295,10 +296,7 @@ legend("topright", legend = c("nodes < 3", "nodes > 3"),
 test_nodes <- survdiff(Surv(rectime, censrec) ~ nodes_gr2, data = df, rho = 0)
 print(test_nodes) # p= <2e-16  < 0.05 => odrzucamy H0 => krzywe roznia sie istotnie
 
-# test trendu 
-trend_nodes <- ten(Surv(rectime, censrec) ~ nodes_gr2, data = df)
-print(trend_nodes)
-comp(trend_nodes) # gdzie jest p-value???
+
 
 
 #size
@@ -349,7 +347,7 @@ krzywa_przezycia_size4 <- survfit(Surv(rectime, censrec) ~ 1,
 
 
 plot(krzywa_przezycia_size1,col="red", xlab = "czas (dni)", ylab = "prawdopodobieństwo przeżycia", 
-     main = "Krzywa przeżycia")
+     main = "Wielkość guza (w cm)")
 lines(krzywa_przezycia_size2,col="green")
 lines(krzywa_przezycia_size3,col="blue")
 lines(krzywa_przezycia_size4,col="yellow")
@@ -358,10 +356,26 @@ legend("topright", legend = c("size < 20", "size 20-25", "size 25-35", "size>35"
 
 
 # testujemy
-test_size <- survdiff(Surv(rectime, censrec) ~ size_gr2, data = df, rho = 0)
+test_size <- survdiff(Surv(rectime, censrec) ~ size_gr2, data = df)
 print(test_size) # p= p= 0.009   < 0.05 => odrzucamy H0 => krzywe roznia sie istotnie
 
 # test trendu 
 trend_size <- ten(Surv(rectime, censrec) ~ size_gr2, data = df)
-print(trend_size)
-comp(trend_size) # gdzie jest p-value???
+print(trend_size) 
+comp(trend_size)
+attr(trend_size, "tft")
+
+
+
+size_test <- survdiff(Surv(rectime, censrec) ~ size_gr2, data = df)
+
+l <- sum((size_test$obs-size_test$exp)*(1:4))
+m <- sqrt(sum(outer(1:4,1:4,"*")*size_test$var))
+
+Z<-l/m # test statistic for testing trend, based on log-rank 
+# Z = 3.370494
+
+pval <- (1-pnorm(Z))
+# 0.0003751677
+# odrzucamy H0 na rzecz H1 o tym, ze widoczny trend (im wiekszy guz) jest statystycznie  istotny
+
